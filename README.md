@@ -137,3 +137,46 @@ public enum EventCommunicatorsRelationship
     Other = 128
 }
 ```
+___
+
+**Implementation of PluginBase for WinForms:**
+```C#
+abstract class PluginBase : UserControl, IEventCommunicator
+{
+    protected PluginBase(IEventAggregator eventAggregator)
+    {
+        CommunicatorId = Guid.NewGuid();
+        EvAggregator = eventAggregator;
+    }
+
+    protected IEventAggregator EvAggregator { get; private set; }
+
+    public Guid CommunicatorId { get; private set; }
+    
+    private IEventCommunicator _parentCommunicator;
+    public IEventCommunicator ParentCommunicator
+    {
+        get
+        {
+            if (_parentCommunicator == null)
+            {
+                for (Control control = Parent; control != null; control = control.Parent)
+                {
+                    var controlAsComm = control as IEventCommunicator;
+                    if (controlAsComm != null)
+                    {
+                        _parentCommunicator = controlAsComm;
+                        break;
+                    }
+                }
+            }
+            return _parentCommunicator;
+        }
+    }
+
+    public void SetEventAggregator(IEventAggregator eventAggregator)
+    {
+        EvAggregator = eventAggregator;
+    }
+}
+```
